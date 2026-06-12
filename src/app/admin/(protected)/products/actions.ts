@@ -96,20 +96,39 @@ export async function createProduct(
   }
 
   try {
-    await db.insert(products).values({
-      name: values.name,
-      brand: values.brand,
-      price,
-      originalPrice,
-      imageUrl: values.imageUrl,
-      thumbnailUrl: values.thumbnailUrl || null,
-      categoryId,
-      shopUrl: values.shopUrl,
-      shopName: values.shopName || '무신사',
-      color: values.color || null,
-      sizeOptions: values.sizeOptions ? parseList(values.sizeOptions) : null,
-      tags: values.tags ? parseList(values.tags) : null,
-    });
+    const [product] = await db
+      .insert(products)
+      .values({
+        name: values.name,
+        brand: values.brand,
+        price,
+        originalPrice,
+        imageUrl: values.imageUrl,
+        thumbnailUrl: values.thumbnailUrl || null,
+        categoryId,
+        shopUrl: values.shopUrl,
+        shopName: values.shopName || '무신사',
+        color: values.color || null,
+        sizeOptions: values.sizeOptions ? parseList(values.sizeOptions) : null,
+        tags: values.tags ? parseList(values.tags) : null,
+      })
+      .returning();
+
+    // Start 3D model generation in background (don't wait for it)
+    if (product?.id) {
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000';
+
+      fetch(`${baseUrl}/api/admin/products/${product.id}/generate-3d`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: values.imageUrl,
+          productName: values.name,
+        }),
+      }).catch((err) => console.error('Failed to start 3D generation:', err));
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     if (message.includes('unique') || message.includes('duplicate')) {
