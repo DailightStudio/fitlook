@@ -1,7 +1,14 @@
 // Tripo.AI API client for 3D model generation from images
 
-const TRIPO_API_BASE = 'https://api.tripo.ai/v2';
-const TRIPO_API_KEY = process.env.TRIPO_API_KEY;
+const TRIPO_API_BASE = 'https://api.tripo3d.ai/v2';
+
+function getTripoApiKey() {
+  const key = process.env.TRIPO_API_KEY;
+  if (!key) {
+    throw new Error('TRIPO_API_KEY is not set in environment variables');
+  }
+  return key;
+}
 
 interface TripoTask {
   task_id: string;
@@ -20,15 +27,13 @@ interface TripoTask {
 }
 
 export async function submitImageToTripo(imageUrl: string, productName: string): Promise<string> {
-  if (!TRIPO_API_KEY) {
-    throw new Error('TRIPO_API_KEY is not set');
-  }
+  const apiKey = getTripoApiKey();
 
   try {
-    const response = await fetch(`${TRIPO_API_BASE}/openapi/submit-task`, {
+    const response = await fetch(`${TRIPO_API_BASE}/openapi/task`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${TRIPO_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -56,15 +61,13 @@ export async function submitImageToTripo(imageUrl: string, productName: string):
 }
 
 export async function getTripoTaskStatus(taskId: string): Promise<TripoTask> {
-  if (!TRIPO_API_KEY) {
-    throw new Error('TRIPO_API_KEY is not set');
-  }
+  const apiKey = getTripoApiKey();
 
   try {
     const response = await fetch(`${TRIPO_API_BASE}/openapi/task/${taskId}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${TRIPO_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
     });
 

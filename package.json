@@ -9,12 +9,17 @@
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:migrate:auto": "node scripts/migrate-db.js",
     "db:studio": "drizzle-kit studio",
     "db:seed": "dotenv -e .env.local -- tsx src/lib/seed.ts",
     "db:seed-products": "dotenv -e .env.local -- tsx src/lib/seed-products.ts",
     "crawl": "dotenv -e .env.local -- tsx src/scripts/crawl-musinsa.ts",
+    "spike:download": "dotenv -e .env.local -- tsx spike/download-tripo-samples.ts",
+    "spike:fit": "tsx spike/run-weight-transfer.ts",
     "build:cf": "opennextjs-cloudflare build",
-    "deploy": "opennextjs-cloudflare build && wrangler pages deploy",
+    "build:unity": "powershell -ExecutionPolicy Bypass -File scripts/build-unity.ps1",
+    "setup:complete": "powershell -ExecutionPolicy Bypass -File setup-complete.ps1",
+    "deploy": "npm run build:unity && opennextjs-cloudflare build && wrangler pages deploy",
     "preview:cf": "opennextjs-cloudflare build && wrangler pages dev"
   },
   "dependencies": {

@@ -39,7 +39,6 @@ export function ModelViewer({ modelUrl, productName }: ModelViewerProps) {
         alt={productName}
         auto-rotate
         camera-controls
-        disable-zoom={false}
         style={{
           width: '100%',
           height: '100%',
