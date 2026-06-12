@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD CONSTRAINT "products_shop_url_unique" UNIQUE("shop_url");

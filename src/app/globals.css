@@ -1,6 +1,20 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #7C5CFF;
+  --color-primary-soft: #EDE8FF;
+  --color-accent: #FF4D8D;
+  --color-accent-soft: #FFE3EF;
+  --color-accent-deep: #D62E6E; /* accent 짙은 변형, 흰 텍스트용 (대비 5.4:1) */
+  --color-mint: #3DDBB4;
+  --color-mint-soft: #DFFBF3;
+  --color-lemon: #FFD43B;
+  --color-ink: #1A1530;
+  --color-surface: #FAF9FF;
+  /* next/font 변수 연결 */
+  --font-sans: var(--font-noto), ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
 
 * {
   margin: 0;
@@ -11,4 +25,15 @@
 html, body {
   width: 100%;
   height: 100%;
+}
+
+/* 그라디언트 배경 공통 유틸 */
+.gradient-blob {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgb(124 92 255 / 0.1) 0%,
+    rgb(255 77 141 / 0.1) 50%,
+    rgb(255 212 59 / 0.1) 100%
+  );
 }

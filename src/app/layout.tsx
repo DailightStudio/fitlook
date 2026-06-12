@@ -1,5 +1,13 @@
 import type { Metadata } from 'next';
+import { Noto_Sans_KR } from 'next/font/google';
+import { Header } from '@/components/layout/Header';
 import './globals.css';
+
+const notoSans = Noto_Sans_KR({
+  subsets: ['latin'],
+  weight: 'variable',
+  variable: '--font-noto',
+});
 
 export const metadata: Metadata = {
   title: 'fitlook — 3D 코디 미리보기',
@@ -12,8 +20,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
-      <body>{children}</body>
+    <html lang="ko" className={notoSans.variable}>
+      <body className="font-sans text-ink bg-surface">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
