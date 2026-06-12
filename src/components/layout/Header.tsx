@@ -57,6 +57,9 @@ export function Header() {
           <Link href="/products" className="font-medium hover:text-primary transition">
             상품
           </Link>
+          <Link href="/products/submit" className="font-medium text-accent hover:text-accent-deep transition">
+            3D 생성
+          </Link>
           <Link href="/outfits" className="font-medium hover:text-primary transition">
             코디 갤러리
           </Link>
@@ -106,6 +109,13 @@ export function Header() {
             onClick={() => setMenuOpen(false)}
           >
             상품
+          </Link>
+          <Link
+            href="/products/submit"
+            className="font-medium text-accent hover:text-accent-deep transition py-1"
+            onClick={() => setMenuOpen(false)}
+          >
+            3D 생성
           </Link>
           <Link
             href="/outfits"
