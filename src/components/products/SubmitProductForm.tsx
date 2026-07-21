@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ModelViewer } from './ModelViewer';
 
 interface SubmissionState {
@@ -11,9 +11,34 @@ interface SubmissionState {
   productName?: string;
 }
 
+const LOADING_MESSAGES = [
+  { after: 0, message: '이미지 추출 중...' },
+  { after: 5000, message: 'Tripo AI에 업로드 중...' },
+  { after: 15000, message: '3D 모델 생성 중... (1-3분 소요)' },
+];
+
+function isCreditError(message?: string) {
+  return !!message && (message.includes('platform.tripo3d.ai') || message.includes('크레딧'));
+}
+
 export default function SubmitProductForm() {
   const [url, setUrl] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
+  const [showImageInput, setShowImageInput] = useState(false);
   const [state, setState] = useState<SubmissionState>({ status: 'idle' });
+  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0].message);
+
+  // 로딩 중 단계별 메시지 표시
+  useEffect(() => {
+    if (state.status !== 'loading') return;
+
+    setLoadingMessage(LOADING_MESSAGES[0].message);
+    const timers = LOADING_MESSAGES.slice(1).map(({ after, message }) =>
+      setTimeout(() => setLoadingMessage(message), after)
+    );
+
+    return () => timers.forEach(clearTimeout);
+  }, [state.status]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +56,13 @@ export default function SubmitProductForm() {
       return;
     }
 
-    setState({ status: 'loading', message: '3D 모델 생성 중...' });
+    setState({ status: 'loading' });
 
     try {
       const response = await fetch('/api/products/generate-from-url', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url.trim() }),
+        body: JSON.stringify({ url: url.trim(), imageUrl: imageUrl.trim() || undefined }),
       });
 
       if (!response.ok) {
@@ -82,24 +107,66 @@ export default function SubmitProductForm() {
           </p>
         </div>
 
+        {/* 직접 이미지 URL 입력 토글 */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowImageInput((prev) => !prev)}
+            className="text-xs text-primary underline hover:text-accent-deep"
+          >
+            직접 이미지 URL 입력 (자동 추출 실패 시)
+          </button>
+          {showImageInput && (
+            <input
+              id="imageUrl"
+              type="url"
+              placeholder="https://cdn.example.com/product-image.jpg"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              disabled={state.status === 'loading'}
+              className="mt-2 w-full px-4 py-3 border border-primary/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
+            />
+          )}
+        </div>
+
         <button
           type="submit"
           disabled={state.status === 'loading'}
           className="w-full py-3 bg-gradient-to-r from-primary to-accent-deep hover:shadow-lg text-white font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-wait"
         >
-          {state.status === 'loading' ? '생성 중... (10초 이상 소요)' : '3D 모델 생성'}
+          {state.status === 'loading' ? '생성 중...' : '3D 모델 생성'}
         </button>
       </form>
 
+      {/* 로딩 상태 (단계별 메시지) */}
+      {state.status === 'loading' && (
+        <div className="p-4 rounded-xl text-sm font-medium bg-blue-50 text-blue-700 border border-blue-200">
+          {loadingMessage}
+        </div>
+      )}
+
+      {/* 크레딧 부족 경고 */}
+      {state.status === 'error' && isCreditError(state.message) && (
+        <div className="p-4 rounded-xl text-sm font-medium bg-orange-50 border border-orange-200 text-orange-800 space-y-3">
+          <p>{state.message}</p>
+          <a
+            href="https://platform.tripo3d.ai"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition"
+          >
+            Tripo에서 크레딧 충전하기 →
+          </a>
+        </div>
+      )}
+
       {/* 상태 메시지 */}
-      {state.message && (
+      {state.message && state.status !== 'loading' && !(state.status === 'error' && isCreditError(state.message)) && (
         <div
           className={`p-4 rounded-xl text-sm font-medium ${
             state.status === 'error'
               ? 'bg-red-50 text-red-700 border border-red-200'
-              : state.status === 'success'
-                ? 'bg-mint-soft text-ink border border-mint'
-                : 'bg-blue-50 text-blue-700 border border-blue-200'
+              : 'bg-mint-soft text-ink border border-mint'
           }`}
         >
           {state.message}

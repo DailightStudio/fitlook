@@ -1,7 +1,73 @@
 // Web crawler to extract product image from shopping mall URLs
 
+// Musinsa is a JS-rendered site; static og:image returns the brand logo.
+// Try Musinsa's internal APIs to get the actual product image.
+async function extractMusinsaImage(productId: string): Promise<string | null> {
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Accept': 'application/json',
+  };
+
+  // Attempt 1: images API
+  try {
+    const response = await fetch(
+      `https://www.musinsa.com/api2/dp/v1/goods/${productId}/images`,
+      { headers },
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const images = data?.data?.images || data?.images || data?.data;
+      if (Array.isArray(images) && images.length > 0) {
+        const first = images[0];
+        const imageUrl = typeof first === 'string' ? first : first?.imageUrl || first?.url;
+        if (imageUrl) {
+          return normalizeUrl(imageUrl, 'https://image.msscdn.net/');
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Musinsa images API failed:', error);
+  }
+
+  // Attempt 2: goods-detail API
+  try {
+    const response = await fetch(
+      `https://goods-detail.musinsa.com/goods/${productId}`,
+      { headers },
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const imageUrl =
+        data?.data?.thumbnailImageUrl ||
+        data?.data?.imageUrl ||
+        data?.data?.goodsImages?.[0]?.imageUrl;
+      if (imageUrl) {
+        return normalizeUrl(imageUrl, 'https://image.msscdn.net/');
+      }
+    }
+  } catch (error) {
+    console.error('Musinsa goods-detail API failed:', error);
+  }
+
+  return null;
+}
+
 export async function extractImageFromUrl(url: string): Promise<string> {
   try {
+    // Musinsa product page: try internal API first
+    if (url.includes('musinsa.com/products/')) {
+      const productId = url.match(/\/products\/(\d+)/)?.[1];
+      if (productId) {
+        const musinsaImage = await extractMusinsaImage(productId);
+        if (musinsaImage) {
+          return musinsaImage;
+        }
+        // Fall through to og:image extraction below
+      }
+    }
+
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',

@@ -12,6 +12,7 @@ export function OutfitBuilder() {
   const [draft, setDraft] = useState<Draft>({});
   const [activeSlot, setActiveSlot] = useState<Slot>('top');
   const [title, setTitle] = useState('');
+  const [isPublic, setIsPublic] = useState(true);
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -68,7 +69,7 @@ export function OutfitBuilder() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
-          isPublic: true,
+          isPublic,
           items,
         }),
       });
@@ -121,6 +122,18 @@ export function OutfitBuilder() {
             placeholder="코디 제목을 입력하세요"
             className="w-full border rounded-lg px-3 py-2 text-sm"
           />
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="w-4 h-4 accent-black"
+            />
+            <span>공개로 공유</span>
+            <span className="text-xs text-gray-400">
+              {isPublic ? '모두가 볼 수 있어요' : '나만 볼 수 있어요'}
+            </span>
+          </label>
           <button
             onClick={handleSave}
             disabled={!title.trim() || itemCount === 0 || saving}

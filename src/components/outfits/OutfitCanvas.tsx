@@ -1,6 +1,10 @@
 import type { Slot } from '@/lib/slots';
 import type { Draft } from '@/lib/outfit-draft';
 import { SlotCard } from './SlotCard';
+import { ModelViewer } from '@/components/products/ModelViewer';
+
+// Display priority for the 3D preview: top first, then the rest
+const VIEWER_SLOT_ORDER: Slot[] = ['top', 'outer', 'bottom', 'shoes', 'accessory', 'bag'];
 
 export function OutfitCanvas({
   draft,
@@ -11,8 +15,27 @@ export function OutfitCanvas({
   onRemove?: (slot: Slot) => void;
   onEmptySlotClick?: (slot: Slot) => void;
 }) {
+  // First product (by priority) that has a 3D model
+  const viewerProduct = VIEWER_SLOT_ORDER
+    .map((slot) => draft[slot])
+    .find((p) => p?.model3dUrl);
+
   return (
     <div className="space-y-4">
+      {/* 3D Preview */}
+      <div className="bg-gray-100 rounded-lg aspect-[3/4] overflow-hidden">
+        {viewerProduct?.model3dUrl ? (
+          <ModelViewer
+            modelUrl={viewerProduct.model3dUrl}
+            productName={viewerProduct.name}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-gray-400 text-sm text-center px-4">
+            3D 모델이 있는 상품을 선택하면 미리보기가 표시됩니다
+          </div>
+        )}
+      </div>
+
       {/* Row 1: outer, top */}
       <div className="grid grid-cols-2 gap-3">
         <SlotCard

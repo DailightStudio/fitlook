@@ -1,0 +1,38 @@
+# Unity generated
+[Ll]ibrary/
+[Ll]ogs/
+[Ll]og/
+*.log
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Bb]uild[Ll]og*
+[Bb]uild[Rr]esults*/
+[Cc]ode/Cache/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db
+.DS_Store

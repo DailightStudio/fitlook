@@ -1,0 +1,24 @@
+﻿%YAML 1.1
+%TAG ! tag:yaml.org,2002:
+--- !u!129 &1
+PlayerSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 20
+  productName: fitlook Try-On
+  productVersion: 0.1.0
+  apiCompatibilityLevel: 6
+  buildNumber: 1
+  webglTemplate: Default
+  webglExceptionSupport: 1
+  webglNameFilesAsHashes: 0
+  webglDataCaching: 1
+  webglDebugSymbols: 0
+  webglEmscriptenArgs: 
+  webglModulesDirectory: 
+  webglUseEmbeddedUnity: 0
+  webglCompressionFormat: 1
+  webglLinkerTarget: 1
+  webglThreadsSupport: 0
+  webglMemorySize: 256
+  scriptingDefineSymbols: {}
+  exposedRuntimeAssemblyNames: []

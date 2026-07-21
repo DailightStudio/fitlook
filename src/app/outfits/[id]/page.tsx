@@ -32,6 +32,7 @@ export default async function OutfitDetailPage({ params }: { params: Promise<{ i
         price: item.product.price,
         imageUrl: item.product.imageUrl,
         thumbnailUrl: item.product.thumbnailUrl,
+        model3dUrl: item.product.model3dUrl,
         slot,
       };
     }

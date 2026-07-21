@@ -18,9 +18,9 @@ export function SlotCard({
     return (
       <button
         onClick={onEmptyClick}
-        className="aspect-[3/4] border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-600 transition"
+        className="aspect-[3/4] border-2 border-dashed rounded-xl flex flex-col items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-600 hover:scale-[1.02] active:scale-95 transition-all duration-150"
       >
-        <span className="text-2xl mb-2">+</span>
+        <span className="text-2xl mb-2 animate-pulse">+</span>
         <span className="text-xs">{label}</span>
       </button>
     );

@@ -35,6 +35,7 @@ export function AddToOutfitButton({
       price: product.price,
       imageUrl: product.imageUrl,
       thumbnailUrl: product.thumbnailUrl,
+      model3dUrl: product.model3dUrl,
     };
     addToDraft(slot, draftProduct);
     setAdded(true);

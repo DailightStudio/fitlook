@@ -3,6 +3,7 @@ import type { Slot } from './slots';
 export type DraftProduct = {
   id: string; name: string; brand: string; price: number;
   imageUrl: string; thumbnailUrl: string | null; slot: Slot;
+  model3dUrl?: string | null;
 };
 export type Draft = Partial<Record<Slot, DraftProduct>>;
 

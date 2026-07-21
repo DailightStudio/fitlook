@@ -1,0 +1,54 @@
+{
+  "samples": [
+    {
+      "category": "top",
+      "name": "Casual T-Shirt 1",
+      "url": "https://www.musinsa.com/products/2900213"
+    },
+    {
+      "category": "top",
+      "name": "Casual T-Shirt 2",
+      "url": "https://www.musinsa.com/products/2900224"
+    },
+    {
+      "category": "top",
+      "name": "Button-Up Shirt",
+      "url": "https://www.musinsa.com/products/2900235"
+    },
+    {
+      "category": "top",
+      "name": "Hoodie",
+      "url": "https://www.musinsa.com/products/2900246"
+    },
+    {
+      "category": "bottom",
+      "name": "Straight Jeans 1",
+      "url": "https://www.musinsa.com/products/2900257"
+    },
+    {
+      "category": "bottom",
+      "name": "Straight Jeans 2",
+      "url": "https://www.musinsa.com/products/2900268"
+    },
+    {
+      "category": "bottom",
+      "name": "Chino Pants",
+      "url": "https://www.musinsa.com/products/2900279"
+    },
+    {
+      "category": "outer",
+      "name": "Denim Jacket",
+      "url": "https://www.musinsa.com/products/2900290"
+    },
+    {
+      "category": "outer",
+      "name": "Bomber Jacket",
+      "url": "https://www.musinsa.com/products/2900301"
+    },
+    {
+      "category": "outer",
+      "name": "Leather Jacket",
+      "url": "https://www.musinsa.com/products/2900312"
+    }
+  ]
+}

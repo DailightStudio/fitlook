@@ -15,13 +15,12 @@ interface TripoTask {
   type: string;
   status: 'pending' | 'running' | 'success' | 'failed';
   progress: number;
-  result?: {
-    model: {
-      glb: string;
-      mtl?: string;
-      obj?: string;
-      usdz?: string;
-    };
+  input?: Record<string, unknown>;
+  output?: {
+    model?: string;
+    base_model?: string;
+    pbr_model?: string;
+    rendered_image?: string;
   };
   error?: string;
 }
@@ -30,6 +29,44 @@ export async function submitImageToTripo(imageUrl: string, productName: string):
   const apiKey = getTripoApiKey();
 
   try {
+    // Step 1: Download the image from the URL
+    const imageResponse = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+      },
+    });
+
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image: ${imageResponse.statusText}`);
+    }
+
+    const imageBlob = await imageResponse.blob();
+
+    // Step 2: Upload the image to Tripo to get a file_token
+    const formData = new FormData();
+    formData.append('file', imageBlob, 'image.jpg');
+
+    const uploadResponse = await fetch(`${TRIPO_API_BASE}/openapi/upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      const error = await uploadResponse.json().catch(() => ({}));
+      throw new Error(`Tripo upload error: ${error.message || uploadResponse.statusText}`);
+    }
+
+    const uploadData = await uploadResponse.json();
+    const imageToken = uploadData.data?.image_token;
+
+    if (!imageToken) {
+      throw new Error('No image_token in Tripo upload response');
+    }
+
+    // Step 3: Create the image_to_model task using the file_token
     const response = await fetch(`${TRIPO_API_BASE}/openapi/task`, {
       method: 'POST',
       headers: {
@@ -37,18 +74,19 @@ export async function submitImageToTripo(imageUrl: string, productName: string):
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        type: 'image_to_3d',
-        input: {
-          image_url: imageUrl,
-        },
-        config: {
-          model_name: productName.slice(0, 50), // Max 50 chars
+        type: 'image_to_model',
+        file: {
+          type: 'jpg',
+          file_token: imageToken,
         },
       }),
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({}));
+      if (error.code === 2010) {
+        throw new Error('Tripo 크레딧이 부족합니다. platform.tripo3d.ai에서 크레딧을 충전해주세요.');
+      }
       throw new Error(`Tripo API error: ${error.message || response.statusText}`);
     }
 
@@ -110,7 +148,7 @@ export async function waitForTripoTask(
 
 export async function downloadTripoModel(
   glbUrl: string,
-): Promise<Buffer> {
+): Promise<ArrayBuffer> {
   try {
     const response = await fetch(glbUrl);
 
@@ -118,7 +156,7 @@ export async function downloadTripoModel(
       throw new Error(`Failed to download model: ${response.statusText}`);
     }
 
-    return Buffer.from(await response.arrayBuffer());
+    return await response.arrayBuffer();
   } catch (error) {
     console.error('Failed to download Tripo model:', error);
     throw error;
@@ -136,11 +174,13 @@ export async function generateTripoModel(imageUrl: string, productName: string):
     const task = await waitForTripoTask(taskId);
     console.log(`[Tripo] Task completed: ${taskId}`);
 
-    if (!task.result?.model?.glb) {
+    const glbUrl = task.output?.model || task.output?.pbr_model || task.output?.base_model;
+
+    if (!glbUrl) {
       throw new Error('No GLB URL in Tripo response');
     }
 
-    return task.result.model.glb;
+    return glbUrl;
   } catch (error) {
     console.error('Tripo model generation failed:', error);
     throw error;

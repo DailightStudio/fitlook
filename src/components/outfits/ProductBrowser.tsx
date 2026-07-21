@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { SLOTS, type Slot } from '@/lib/slots';
 import { formatPrice } from '@/lib/format';
 import type { DraftProduct, Draft } from '@/lib/outfit-draft';
@@ -7,6 +7,7 @@ import type { DraftProduct, Draft } from '@/lib/outfit-draft';
 type Product = {
   id: string; name: string; brand: string; price: number;
   imageUrl: string; thumbnailUrl: string | null;
+  model3dUrl?: string | null;
   category: { slug: string } | null;
 };
 
@@ -25,6 +26,13 @@ export function ProductBrowser({
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [tabFlash, setTabFlash] = useState(false);
+  const listRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef<HTMLButtonElement>(null);
+  const mountedRef = useRef(false);
+
+  const totalPages = Math.max(1, Math.ceil(total / 12));
 
   // Find category slug from SLOTS
   const categorySlug = useMemo(() => {
@@ -35,6 +43,21 @@ export function ProductBrowser({
   useEffect(() => {
     setPage(1);
   }, [activeSlot, search]);
+
+  // Visual feedback when activeSlot changes (e.g. "+" clicked on canvas)
+  useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
+    // Scroll product list to top + bring active tab into view
+    listRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    activeTabRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    // 0.3s flash on the active tab
+    setTabFlash(true);
+    const t = setTimeout(() => setTabFlash(false), 300);
+    return () => clearTimeout(t);
+  }, [activeSlot]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -49,6 +72,7 @@ export function ProductBrowser({
         const res = await fetch(`/api/products?${params}`);
         const data = await res.json();
         setProducts(data.data ?? []);
+        setTotal(data.total ?? 0);
       } catch (e) {
         console.error(e);
       } finally {
@@ -66,6 +90,7 @@ export function ProductBrowser({
       price: product.price,
       imageUrl: product.imageUrl,
       thumbnailUrl: product.thumbnailUrl,
+      model3dUrl: product.model3dUrl ?? null,
       slot: activeSlot,
     };
     onSelect(activeSlot, draftProduct);
@@ -78,10 +103,13 @@ export function ProductBrowser({
         {SLOTS.map((slot) => (
           <button
             key={slot.key}
+            ref={activeSlot === slot.key ? activeTabRef : undefined}
             onClick={() => onSlotChange(slot.key)}
-            className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition ${
+            className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors duration-300 ${
               activeSlot === slot.key
-                ? 'bg-black text-white'
+                ? tabFlash
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-black text-white'
                 : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
@@ -102,7 +130,7 @@ export function ProductBrowser({
       </div>
 
       {/* Products Grid */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div ref={listRef} className="flex-1 overflow-y-auto p-3 space-y-3">
         {loading ? (
           <p className="text-center text-gray-500 py-4">로딩 중...</p>
         ) : products.length === 0 ? (
@@ -134,6 +162,29 @@ export function ProductBrowser({
                 </button>
               );
             })}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between gap-2 pt-1">
+            <button
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page <= 1}
+              className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              이전
+            </button>
+            <span className="text-xs text-gray-500">
+              페이지 {page}/{totalPages}
+            </span>
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page >= totalPages}
+              className="px-3 py-2 border rounded-lg text-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              다음
+            </button>
           </div>
         )}
       </div>
