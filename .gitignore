@@ -45,3 +45,6 @@ yarn-error.log*
 .claude/
 spike-download.log
 __pycache__/
+
+# 빌드 산출물 — deploy 시 opennextjs-cloudflare build 로 매번 재생성됨
+.open-next/
